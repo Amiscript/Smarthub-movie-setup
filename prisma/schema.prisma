@@ -1,0 +1,88 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`\
+
+generator client {
+  provider = "prisma-client.js"
+}
+
+datasource db {
+  provider = "postgresql"
+  
+
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String?
+  password  String
+  roles     String[]
+  createdAt DateTime @default(now())
+  reviews   Review[]
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  comment   String?
+  rating    Int
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+  
+  userId    String
+
+  movie     Movie    @relation(fields: [movieId], references: [id])
+  movieId   String
+  
+  @@unique([userId, movieId])
+  @@map("reviews")
+}
+
+
+model Movie {
+  id        String   @id @default(uuid())
+  title     String
+  description String?
+  releaseDate DateTime?
+  genre     Genre[] @relation("MovieGenres")
+  actors    Actor[] @relation("MovieActors")
+  posterUrl String?
+  posterId  String?
+  reviews   Review[]
+
+  @@map("movies")
+}
+
+model Actor {
+  id        String   @id @default(uuid())
+  name      String
+  bio       String?
+  photoUrl  String?
+  photoId   String?
+  movies   Movie[] @relation("MovieActors")
+
+
+  @@map("actors")
+}
+
+model Genre {
+  id        String   @id @default(uuid())
+  name      String
+  description String?
+  movies    Movie[] @relation("MovieGenres")
+
+  @@map("genres")
+}
+
+// one -to one relationship between User and Review is established through the userId field in the Review model, which references the id field in the User model. Each User can have multiple Reviews, while each Review is associated with a single User.
+
+// primary -key (id)
+
+// foreign -key (userId) references User(id)
+
+// one- to-many relationship between User and Review is established through the userId field in the Review model, which references the id field in the User model. Each User can have multiple Reviews, while each Review is associated with a single User.
+
+// many to many relationship between Review and Movie can be established by creating a join table that connects the two models. However, in the current schema, the Review model has a movieId field that references a Movie model, which is not defined in the provided schema. To establish a many-to-many relationship, you would need to define a Movie model and create a join table that connects Reviews and Movies.
+
+// @@map - The `@@map` attribute in Prisma is used to specify a custom name for the database table that corresponds to a model. In the provided schema, the `@@map` attribute is used in the `Review` and `Movie` models to map them to the "reviews" and "movies" tables in the database, respectively. This allows you to have different names for your models in your Prisma schema and your actual database tables.
